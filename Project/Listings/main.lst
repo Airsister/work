@@ -1,0 +1,236 @@
+C51 COMPILER V9.54   MAIN                                                                  03/30/2026 13:02:17 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil5.37\Core\C51\BIN\C51.EXE fun\main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Lis
+                    -tings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "Key.h"
+   3          #define SPEED 500
+   4          unsigned char keynum;
+   5          sbit Buzzer=P2^5;
+   6          unsigned int code FreqTable[]={
+   7            63777,63872,63967,64053,64139,64214,64290,64359,64424,64488,64546,64602,
+   8            64654,64703,64750,64794,64836,64875,64912,64947,64980,65012,65041,65069,
+   9            65094,65119,65142,65165,65186,65205,65223,65241,65258,65273,65288,65302
+  10          };
+  11          
+  12          unsigned char code Music_2[]={
+  13            21,4+4,
+  14            19,4,
+  15            16,4+2,
+  16            16,2,
+  17            12,4,
+  18            14,6, 
+  19            12,2, 
+  20            14,4, 
+  21            16,3, 
+  22            14,1,
+  23            12,6,
+  24            9,2, 
+  25            9,4, 
+  26            7,4, 
+  27            12,4,
+  28            12,4+4,
+  29            7,4,
+  30            12,6,
+  31            12,2,
+  32            12,4,
+  33            16,2,
+  34            14,6,
+  35            12,2,
+  36            14,4,
+  37            16,2,
+  38            14,2,
+  39            12,4,
+  40            12,4,
+  41            16,4,
+  42            19,4,
+  43            21,4+4+4,
+  44            21,2,
+  45            19,6,
+  46            16,2,
+  47            16,4,
+  48            12,4,
+  49            14,4,
+  50            16, 2,
+  51            14, 2,
+  52            12, 6,
+  53            9,  2,
+  54            9,  4,
+C51 COMPILER V9.54   MAIN                                                                  03/30/2026 13:02:17 PAGE 2   
+
+  55            7,  4,
+  56            12, 4,
+  57            12,12,
+  58            21, 4,
+  59          19, 8,
+  60          16, 6,
+  61          16, 2,
+  62          12, 4,
+  63          14, 6,
+  64          12, 2,
+  65          14, 4,
+  66          21, 2,
+  67          19, 6,
+  68          16, 2,
+  69          16, 4,
+  70          19, 4,
+  71          21, 4,
+  72          21, 12,
+  73          21, 4,
+  74          19, 8,
+  75          16, 4,
+  76          16,6,
+  77          12, 2,
+  78          14, 6,
+  79          12, 2,
+  80          14, 4,
+  81          16, 6,
+  82          14, 1,
+  83          12, 6,
+  84          9 ,2,
+  85          9,  4,
+  86          7,  4,
+  87          12, 4,
+  88          12, 12,
+  89          21, 8,
+  90          19, 4,
+  91          16, 6,
+  92          16, 2,
+  93          12, 4,
+  94          14, 6,
+  95          12, 2,
+  96          14, 4,
+  97          16, 6,
+  98          14, 1,
+  99          12, 6,
+ 100          9,  2,
+ 101          9,  4,
+ 102          7,  4,
+ 103          12, 12,
+ 104          12, 8,
+ 105          7,  4,
+ 106          21, 2,
+ 107          19, 2,
+ 108          16, 2,
+ 109          19, 2,
+ 110          21, 4,
+ 111          21, 12,
+ 112          24, 4,
+ 113          19, 4,
+ 114          16, 4,
+ 115          16, 6,
+ 116          14, 2,
+C51 COMPILER V9.54   MAIN                                                                  03/30/2026 13:02:17 PAGE 3   
+
+ 117          16, 4,
+ 118          16, 12
+ 119          
+ 120          };
+ 121          //unsigned char FreqSelect,MusicSelect;
+ 122          //void main()
+ 123          //{
+ 124          //  
+ 125          //   Timer0_Init();
+ 126          //    
+ 127          //     while(1)
+ 128          //     {
+ 129          //       FreqSelect=Music_2[MusicSelect];
+ 130          //       MusicSelect++;
+ 131          //       Delay_ms(SPEED/4*Music_2[MusicSelect]);
+ 132          //       MusicSelect++;
+ 133          ////       if(MusicSelect>=sizeof(Music_2)/sizeof(unsigned char))
+ 134          ////       {MusicSelect=0;}
+ 135          //       TR0=0;//发个音符后停止，避免连续同音无法区分
+ 136          //       Delay_ms(5);
+ 137          //       TR0=1;
+ 138          
+ 139          //     }
+ 140          //}
+ 141          
+ 142          unsigned char FreqSelect;
+ 143          unsigned int MusicSelect = 0;       // 全局播放索引
+ 144          bit MusicFinish = 0;                // 乐曲结束标志
+ 145          
+ 146          void DelayMusic(unsigned int t)
+ 147          {
+ 148   1        unsigned int i;
+ 149   1        for(i=0;i<t;i++)
+ 150   1        {
+ 151   2          Nixie(1, MusicSelect/10);
+ 152   2          Nixie(2, MusicSelect%10);
+ 153   2          Delay_ms(1);
+ 154   2          P0=0x00;
+ 155   2        }
+ 156   1      }
+ 157          
+ 158          
+ 159          void main()
+ 160          {
+ 161   1          Timer0_Init();
+ 162   1          while(1)
+ 163   1          {
+ 164   2              // ====================== 核心逻辑 ======================
+ 165   2              if(MusicFinish == 0)  // 没播完：正常播放
+ 166   2              {
+ 167   3                  FreqSelect = Music_2[MusicSelect];
+ 168   3                  MusicSelect++;
+ 169   3                  
+ 170   3                  // 显示当前 MusicSelect
+ 171   3                  Nixie(1, MusicSelect / 10);    // 十位
+ 172   3                  Nixie(2, MusicSelect % 10);    // 个位
+ 173   3                  Delay_ms(SPEED/4 * Music_2[MusicSelect]);
+ 174   3                  MusicSelect++;
+ 175   3                  
+ 176   3                  TR0 = 0;
+ 177   3                  DelayMusic(5);
+ 178   3                  TR0 = 1;
+C51 COMPILER V9.54   MAIN                                                                  03/30/2026 13:02:17 PAGE 4   
+
+ 179   3                  
+ 180   3                  // 判断是否播放完毕
+ 181   3                  if(MusicSelect >= sizeof(Music_2)/sizeof(unsigned char))
+ 182   3                  {
+ 183   4                      MusicFinish = 1;   // 标记结束
+ 184   4                      TR0 = 0;           // 关闭蜂鸣器
+ 185   4                  }
+ 186   3              }
+ 187   2              else  // 播完：固定显示最后数值，不再增加
+ 188   2              {
+ 189   3                  Nixie(1, MusicSelect / 10);
+ 190   3                  Nixie(2, MusicSelect % 10);
+ 191   3              }
+ 192   2          }
+ 193   1      }
+ 194          
+ 195          
+ 196          
+ 197          
+ 198          
+ 199          unsigned int T0Count;
+ 200          void Timer0_Routine() interrupt 1
+ 201          {
+ 202   1          //static unsigned int T0Count;
+ 203   1          TL0 = FreqTable[FreqSelect]%256;
+ 204   1          TH0 = FreqTable[FreqSelect]/256;        
+ 205   1          Buzzer=!Buzzer; 
+ 206   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    285    ----
+   CONSTANT SIZE    =    284    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
